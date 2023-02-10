@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        .error {color: #FF0000;}
+    </style>
+    <title>Cinem@s</title>
+</head>
+<body>
+<?php
+$isSafe=false;
+$title=$actors=$direction=$script=$length=$nationality=$genre=$year=$production=$restriction=$distributor=$email="";
+
+function test_input($data) {
+    $data=trim($data);
+    $data=stripslashes($data);
+    $data=htmlspecialchars($data);
+    return $data;
+}
+
+if ($_SERVER["REQUEST_METHOD"]=="POST") {
+    $isSafe=true;
+    if (empty($_POST["titulo"])) {
+        $errorTitle="This field is required";
+        $isSafe=false;
+    } else {
+        $title=test_input($_POST["titulo"]);
+        if (!preg_match("/^[a-zA-Z-0-9' ]*$/", $title)) {
+            $errorTitle="Only letters, numbers and white space allowed";
+            $isSafe=false;
+        }
+    }
+    if (empty($_POST["actores"])) {
+        $errorActors="This field is required";
+        $isSafe=false;
+    } else {
+        $actors=test_input($_POST["actores"]);
+        if (!preg_match("/^[a-zA-Z-' ,]*$/", $actors)) {
+            $errorActors="Only letters, comma and white space allowed";
+            $isSafe=false;
+        }
+    }
+    if (empty($_POST["director"])) {
+        $errorDirection="This field is required";
+        $isSafe=false;
+    } else {
+        $direction=test_input($_POST["director"]);
+        if (!preg_match("/^[a-zA-Z-' ]*$/", $direction)) {
+            $errorDirection="Only letters and white space allowed";
+            $isSafe=false;
+        }
+    }
+    if (empty($_POST["guion"])) {
+        $errorScript="This field is required";
+        $isSafe=false;
+    } else {
+        $script=test_input($_POST["guion"]);
+        if (!preg_match("/^[a-zA-Z-' ]*$/", $script)) {
+            $errorScript="Only letters and white space allowed";
+            $isSafe=false;
+        }
+    }
+    $production=test_input($_POST["produccion"]);
+    if (!preg_match("/^[a-zA-Z-' ]*$/", $production)) {
+        $errorProduction="Only letters and white space allowed";
+        $isSafe=false;
+    }
+    $year=test_input($_POST["año"]);
+    if (!preg_match("/^[0-9]*$/", $year)) {
+        $errorYear="Only numbers  allowed";
+        $isSafe=false;
+    }
+    $nationality=test_input($_POST["nacionalidad"]);
+    if (!preg_match("/^[a-zA-Z-' ]*$/", $nationality)) {
+        $errorNationality="Only letters and white space allowed";
+        $isSafe=false;
+    }
+    $genre=test_input($_POST["genero"]);
+    if (!preg_match("/^[a-zA-Z-' ]*$/", $genre)) {
+        $errorGenre="Only letters and white space allowed";
+        $isSafe=false;
+    }
+    $distributor=test_input($_POST["distribuidora"]);
+    if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $distributor)) {
+        $errorDistributor="This format is not allowed";
+        $isSafe=false;
+    }
+    $email=test_input($_POST["email"]);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errorEmail="This email is not allowed";
+        $isSafe=false;
+    }
+    $length=test_input($_POST["duracion"]);
+    if (!preg_match("/^[0-9]*$/", $length)) {
+        $errorLength="Only numbers allowed";
+        $isSafe=false;
+    }
+    $restriction=test_input($_POST["restricciones"]);
+    if (!preg_match("/^[a-zA-Z-0-9' ]*$/", $restriction)) {
+        $errorRestriction="Only letters and white space allowed";
+        $isSafe=false;
+    }
+    if (!move_uploaded_file($_FILES["fichero"]["tmp_name"],"subidos/" . $_FILES["fichero"]["name"])) {
+        $errorCover="Error en la subida de la carátula <br>";
+        $isSafe=false;
+    }
+    if ($isSafe) {
+        echo "<h2> Formulario - Ejercicio 9 </h2> <br><br>";
+        echo "La película introducida es: $title <br>";
+        echo "Actores: $actors <br>";
+        echo "Director: $direction <br>";
+        echo "Guión: " . $_POST["guion"] . "<br>";
+        echo "Producción: " . $_POST["produccion"] . "<br>";
+        echo "Año: " . $_POST["año"] . "<br>";
+        echo "Nacionalidad: " . $_POST["nacionalidad"] . "<br>";
+        echo "Género: " . $_POST["genero"] . "<br>";
+        echo "Website de la distribuidora en España: " . $_POST["distribuidora"] . "<br>";
+        echo "Email de la distribuidora en España: " . $_POST["email"] . "<br>";
+        echo "Duración: " . $_POST["duracion"] . "<br>";
+        echo "Restricciones de edad: " . $_POST["restricciones"] . "<br>";
+        echo "Carátula: <br>";
+        ?>
+        <ul>
+            <li>Nombre:  <?= $_FILES["fichero"]["name"] ?></li>
+            <li>tamaño: <?= $_FILES["fichero"]["size"] ?></li>
+            <li>Fich. Temporal: <?= $_FILES["fichero"]["tmp_name"] ?></li>
+            <li>Tipo: <?= $_FILES["fichero"]["type"] ?></li>
+            <li>Error: <?= $_FILES["fichero"]["name"] ?></li>
+        </ul>
+        <br>
+        <?php
+        if (isset($errorCover)) {
+            echo "Error en la subida de la carátula <br>";
+        } else {
+            echo "El archivo se ha subido con éxito <br>";
+            echo "<img src=\"subidos/" . $_FILES["fichero"]["name"] . "\" alt=\"Carátula\" height=\"200\" width=\"200\">";
+        }
+    }
+}
+if (!$isSafe) {
+    ?>
+    <h2>Bienvenido/a a la empresa CINEM@S</h2><br>
+    <p>Formulario de introducción de datos de películas</p>
+    <form action="<?= htmlspecialchars($_SERVER["PHP_SELF"])?>" method="post" enctype="multipart/form-data">
+        <span class="error">* Required Field </span>
+        <br><br>
+        <table>
+            <tr>
+                <td><label for="titulo"> Título </label></td>
+                <td><label for="actores"> Actores </label> </td>
+            </tr>
+            <tr>
+                <td><input type="text" id="titulo" name="titulo" value="<?php echo $title; ?>">
+                    <span class="error">* <?php if (isset($errorTitle)) echo $errorTitle; ?></span></td>
+                <td><input type="text" id="actores" name="actores" value="<?php echo $actors; ?>">
+                    <span class="error">* <?php if (isset($errorActors)) echo $errorActors; ?></span></td>
+            </tr>
+            <tr>
+                <td><label for="director"> Director </label></td>
+                <td><label for="guion"> Guión </label> </td>
+            </tr>
+            <tr>
+                <td><input type="text" id="director" name="director" value="<?php echo $direction; ?>">
+                    <span class="error">* <?php if (isset($errorDirection)) echo $errorDirection; ?></span></td>
+                <td><input type="text" id="guion" name="guion" value="<?php echo $script; ?>">
+                    <span class="error">* <?php if (isset($errorScript)) echo $errorScript; ?></span></td>
+            </tr>
+            <tr>
+                <td><label for="produccion"> Producción </label></td>
+                <td><label for="año"> Año </label> </td>
+            </tr>
+            <tr>
+                <td><input type="text" id="produccion" name="produccion" value="<?php echo $production; ?>">
+                    <span class="error"><?php if (isset($errorProduction)) echo $errorProduction; ?></span></td>
+                <td><input type="number" id="año" name="año" value="<?php echo $year; ?>">
+                    <span class="error"><?php if (isset($errorYear)) echo $errorYear; ?></span></td>
+            </tr>
+            <tr>
+                <td><label for="nacionalidad"> Nacionalidad </label></td>
+                <td><label for="genero"> Genero </label> </td>
+            </tr>
+            <tr>
+                <td><input type="text" id="nacionalidad" name="nacionalidad" value="<?php echo $nationality; ?>">
+                    <span class="error"><?php if (isset($errorNationality)) echo $errorNationality; ?></span></td>
+                <td><select id="genero" name="genero">
+                        <option value="comedia">Comedia</option>
+                        <option value="drama">Drama</option>
+                        <option value="accion">Acción</option>
+                        <option value="terror">terror</option>
+                        <option value="suspense">Suspense</option>
+                        <option value="otras">Otras</option>
+                    </select>
+                    <span class="error"><?php if (isset($errorGenre)) {echo $errorGenre;} ?> </span>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="distribuidora"> Página Web Distribuidora </label></td>
+                <td><label for="email"> Email de la distribuidora </label> </td>
+            </tr>
+            <tr>
+                <td><input type="url" id="distribuidora" name="distribuidora" value="<?php echo $distributor; ?>">
+                    <span class="error"><?php if (isset($errorDistributor)) echo $errorDistributor; ?></span></td>
+                <td><input type="email" id="email" name="email" value="<?php echo $email; ?>">
+                    <span class="error"><?php if (isset($errorEmail)) echo $errorEmail; ?></span></td>
+            </tr>
+            <tr>
+                <td><label for="duracion"> Duración </label></td>
+                <td><label for="restricciones"> Restricciones de Edad </label> </td>
+            </tr>
+            <tr>
+                <td><input type="number" id="duracion" name="duracion" value="<?php echo $length; ?>">(minutos)
+                    <span class="error"><?php if (isset($errorLength)) {echo $errorLength;} ?> </span>
+                <td><input type="radio" id="restricciones" name="restricciones" value="todos" checked="checked"> Todos los públicos
+                    <input type="radio" id="restricciones" name="restricciones" value="mayores7"> Mayores de 7 Años
+                    <input type="radio" id="restricciones" name="restricciones" value="mayores18"> Mayores de 18 años
+                    <?php if (isset($errorRestriction)) {echo $errorRestriction;} ?>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><label for="sinopsis"> Sinopsis </label></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <textarea id="sinopsis" rows="10" cols="40" name="sinopsis" value="<?php if (isset($_POST["sinopsis"])) echo $_POST["sinopsis"]; ?>"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="caratula"> Carátula </label></td>
+                <td><input type="file" id="caratula" name="fichero"></td>
+            </tr>
+            <tr>
+
+                <td><input type="submit" name="enviar" value="enviar"></td>
+                <td><input type="reset" value="Borrar"></td>
+            </tr>
+        </table>
+    </form>
+<?php }
+if (isset($_FILES["fichero"]["tmp_name"])) echo "<img src=\"subidos/" . $_FILES["fichero"]["name"] . "\" height=\"200\" width=\"200\">";
+?>
+</body>
+</html>
+
+
